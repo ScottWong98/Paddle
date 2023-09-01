@@ -23,12 +23,24 @@ devices = ['cpu', 'gpu']
 
 
 class TestSparseCreate(unittest.TestCase):
+    def setUp(self):
+        self.init_dtype()
+
+    def init_dtype(self):
+        self.dtype = "float32"
+
     def test_create_coo_by_tensor(self):
         indices = [[0, 0, 1, 2, 2], [1, 3, 2, 0, 1]]
-        values = [1, 2, 3, 4, 5]
+        if self.dtype == "complex64" or self.dtype == "complex128":
+            values = (
+                np.random.random(len(indices[0]))
+                + 1j * np.random.random(len(indices[0]))
+            ).astype(self.dtype)
+        else:
+            values = [1, 2, 3, 4, 5]
         dense_shape = [3, 4]
         dense_indices = paddle.to_tensor(indices)
-        dense_elements = paddle.to_tensor(values, dtype='float32')
+        dense_elements = paddle.to_tensor(values, dtype=self.dtype)
         coo = paddle.sparse.sparse_coo_tensor(
             dense_indices, dense_elements, dense_shape, stop_gradient=False
         )
@@ -38,7 +50,13 @@ class TestSparseCreate(unittest.TestCase):
 
     def test_create_coo_by_np(self):
         indices = [[0, 1, 2], [1, 2, 0]]
-        values = [1.0, 2.0, 3.0]
+        if self.dtype == "complex64" or self.dtype == "complex128":
+            values = (
+                np.random.random(len(indices[0]))
+                + 1j * np.random.random(len(indices[0]))
+            ).astype(self.dtype)
+        else:
+            values = [1.0, 2.0, 3.0]
         dense_shape = [3, 3]
         coo = paddle.sparse.sparse_coo_tensor(indices, values, dense_shape)
         np.testing.assert_array_equal(3, coo.nnz())
@@ -48,11 +66,16 @@ class TestSparseCreate(unittest.TestCase):
     def test_create_csr_by_tensor(self):
         crows = [0, 2, 3, 5]
         cols = [1, 3, 2, 0, 1]
-        values = [1, 2, 3, 4, 5]
+        if self.dtype == "complex64" or self.dtype == "complex128":
+            values = (
+                np.random.random(len(cols)) + 1j * np.random.random(len(cols))
+            ).astype(self.dtype)
+        else:
+            values = [1, 2, 3, 4, 5]
         dense_shape = [3, 4]
         dense_crows = paddle.to_tensor(crows)
         dense_cols = paddle.to_tensor(cols)
-        dense_elements = paddle.to_tensor(values, dtype='float32')
+        dense_elements = paddle.to_tensor(values, dtype=self.dtype)
         stop_gradient = False
         csr = paddle.sparse.sparse_csr_tensor(
             dense_crows,
@@ -65,7 +88,12 @@ class TestSparseCreate(unittest.TestCase):
     def test_create_csr_by_np(self):
         crows = [0, 2, 3, 5]
         cols = [1, 3, 2, 0, 1]
-        values = [1, 2, 3, 4, 5]
+        if self.dtype == "complex64" or self.dtype == "complex128":
+            values = (
+                np.random.random(len(cols)) + 1j * np.random.random(len(cols))
+            ).astype(self.dtype)
+        else:
+            values = [1, 2, 3, 4, 5]
         dense_shape = [3, 4]
         csr = paddle.sparse.sparse_csr_tensor(crows, cols, values, dense_shape)
         # test the to_string.py
@@ -77,7 +105,13 @@ class TestSparseCreate(unittest.TestCase):
     def test_place(self):
         place = core.CPUPlace()
         indices = [[0, 1], [0, 1]]
-        values = [1.0, 2.0]
+        if self.dtype == "complex64" or self.dtype == "complex128":
+            values = (
+                np.random.random(len(indices[0]))
+                + 1j * np.random.random(len(indices[0]))
+            ).astype(self.dtype)
+        else:
+            values = [1.0, 2.0]
         dense_shape = [2, 2]
         coo = paddle.sparse.sparse_coo_tensor(
             indices, values, dense_shape, place=place
@@ -88,7 +122,12 @@ class TestSparseCreate(unittest.TestCase):
 
         crows = [0, 2, 3, 5]
         cols = [1, 3, 2, 0, 1]
-        values = [1.0, 2.0, 3.0, 4.0, 5.0]
+        if self.dtype == "complex64" or self.dtype == "complex128":
+            values = (
+                np.random.random(len(cols)) + 1j * np.random.random(len(cols))
+            ).astype(self.dtype)
+        else:
+            values = [1.0, 2.0, 3.0, 4.0, 5.0]
         csr = paddle.sparse.sparse_csr_tensor(
             crows, cols, values, [3, 5], place=place
         )
@@ -99,10 +138,16 @@ class TestSparseCreate(unittest.TestCase):
 
     def test_dtype(self):
         indices = [[0, 1], [0, 1]]
-        values = [1.0, 2.0]
+        if self.dtype == "complex64" or self.dtype == "complex128":
+            values = (
+                np.random.random(len(indices[0]))
+                + 1j * np.random.random(len(indices[0]))
+            ).astype(self.dtype)
+        else:
+            values = [1.0, 2.0]
         dense_shape = [2, 2]
         indices = paddle.to_tensor(indices, dtype='int32')
-        values = paddle.to_tensor(values, dtype='float32')
+        values = paddle.to_tensor(values, dtype=self.dtype)
         coo = paddle.sparse.sparse_coo_tensor(
             indices, values, dense_shape, dtype='float64'
         )
@@ -110,7 +155,12 @@ class TestSparseCreate(unittest.TestCase):
 
         crows = [0, 2, 3, 5]
         cols = [1, 3, 2, 0, 1]
-        values = [1.0, 2.0, 3.0, 4.0, 5.0]
+        if self.dtype == "complex64" or self.dtype == "complex128":
+            values = (
+                np.random.random(len(cols)) + 1j * np.random.random(len(cols))
+            ).astype(self.dtype)
+        else:
+            values = [1.0, 2.0, 3.0, 4.0, 5.0]
         csr = paddle.sparse.sparse_csr_tensor(
             crows, cols, values, [3, 5], dtype='float16'
         )
@@ -118,11 +168,27 @@ class TestSparseCreate(unittest.TestCase):
 
     def test_create_coo_no_shape(self):
         indices = [[0, 1], [0, 1]]
-        values = [1.0, 2.0]
+        if self.dtype == "complex64" or self.dtype == "complex128":
+            values = (
+                np.random.random(len(indices[0]))
+                + 1j * np.random.random(len(indices[0]))
+            ).astype(self.dtype)
+        else:
+            values = [1.0, 2.0]
         indices = paddle.to_tensor(indices, dtype='int32')
-        values = paddle.to_tensor(values, dtype='float32')
+        values = paddle.to_tensor(values, dtype=self.dtype)
         coo = paddle.sparse.sparse_coo_tensor(indices, values)
         assert [2, 2] == coo.shape
+
+
+class TestSparseCreate_Complex64(TestSparseCreate):
+    def init_dtype(self):
+        self.dtype = "complex64"
+
+
+class TestSparseCreate_Complex128(TestSparseCreate):
+    def init_dtype(self):
+        self.dtype = "complex128"
 
 
 class TestSparseConvert(unittest.TestCase):
@@ -381,6 +447,16 @@ class TestSparseConvert(unittest.TestCase):
                 np.testing.assert_allclose(
                     sp_coo_x.grad.to_dense().numpy().sum(), 0.0
                 )
+
+
+class TestSparseConvert_Complex64(TestSparseConvert):
+    def init_dtype(self):
+        self.dtype = "complex64"
+
+
+class TestSparseConvert_Complex128(TestSparseConvert):
+    def init_dtype(self):
+        self.dtype = "complex128"
 
 
 class TestCooError(unittest.TestCase):
